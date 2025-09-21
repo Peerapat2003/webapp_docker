@@ -1,0 +1,16 @@
+FROM php:8.2-apache
+
+# เปิด mod_rewrite (optional แต่ควรมี)
+RUN a2enmod rewrite
+
+# ติดตั้ง mysqli + pdo_mysql
+RUN docker-php-ext-install mysqli pdo pdo_mysql && docker-php-ext-enable mysqli pdo_mysql
+
+# คัดลอกไฟล์ทั้งหมดเข้า container
+COPY . /var/www/html/
+
+# ตั้ง working directory
+WORKDIR /var/www/html
+
+# ให้สิทธิ์โฟลเดอร์ images
+RUN chown -R www-data:www-data /var/www/html/images

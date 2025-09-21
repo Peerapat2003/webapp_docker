@@ -1,0 +1,50 @@
+services:
+  web:
+    build: .
+    container_name: web_app
+    ports:
+      - "8080:80"
+    depends_on:
+      mysql:
+        condition: service_healthy   # ✅ รอจน MySQL พร้อม
+    volumes:
+      - ./images:/var/www/html/images
+      - ./index.php:/var/www/html/index.php
+    environment:
+      - MYSQL_HOST=mysql
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=secret
+      - MYSQL_DATABASE=game_store
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=secret
+      - MYSQL_DATABASE=game_store
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:                       # ✅ ตรวจสอบว่า MySQL ทำงานจริง
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-psecret"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    depends_on:
+      - mysql
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: secret
+    ports:
+      - "8081:80"
+
+volumes:
+  mysql_data:
